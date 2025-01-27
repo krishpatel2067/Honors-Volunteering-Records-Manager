@@ -12,7 +12,6 @@ let END_COL = "F";
 let HOURS_COL = "G";
 let INT_RANGE = "K2:K2";
 let EXT_RANGE = "K3:K3";
-let INT_EXT_REF = { "Internal": 0, "External": 1 };     // index in drop-down for internal/external hours (in case I decide to change that)
 
 function onOpen() { updateAll(); }
 
@@ -26,6 +25,9 @@ function updateAll() {
     {
         let startTimeRaw = ss.getRange(START_COL + r + ":" +  START_COL + r).getValue();
         let endTimeRaw = ss.getRange(END_COL + r + ":" +  END_COL + r).getValue();
+
+        if (startTimeRaw == '' || endTimeRaw == '')
+          continue;
 
         let timeMs = new Date(endTimeRaw) - new Date(startTimeRaw);
         let timeHr = timeMs / 3.6e6;
@@ -42,17 +44,14 @@ function updateAll() {
     for (let r = 2; r <= range.getLastRow(); r++)
     {
         let typeCell = ss.getRange(TYPE_COL + r + ":" +  TYPE_COL + r).getCell(1, 1)
-        let type = typeCell.getValue();
         let hours = ss.getRange(HOURS_COL + r + ":" + HOURS_COL + r).getValue();
-        let rule = typeCell.getDataValidation();
-        let options = rule.getCriteriaValues()[0];
-
-        if (type == options[INT_EXT_REF["Internal"]])
+        if (typeCell.getDisplayValue() === 'Internal')
             totalIntHrs += hours;
-        else if (type == options[INT_EXT_REF["External"]])
+        else if (typeCell.getDisplayValue() === 'External')
             totalExtHrs += hours;
     }
-
+    console.log(totalIntHrs);
+    console.log(totalExtHrs);
     intCell.setValue(totalIntHrs);
     extCell.setValue(totalExtHrs);
 }
